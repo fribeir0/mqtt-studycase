@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  certgenerator:
+    build:
+      context: ./cert-generator
+    container_name: cert-gen
+    volumes:
+      - ./mosquitto/config/certs:/certs
+    restart: "no"
+
+  mqtt-broker:
+    image: eclipse-mosquitto:2.0.20
+    container_name: mqtt-broker
+    ports:
+      - "8883:8883"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+    restart: unless-stopped
+    command: >
+      sh -c "
+        if [ ! -f /mosquitto/config/passwd ]; then
+          touch /mosquitto/config/passwd &&
+          mosquitto_passwd -b /mosquitto/config/passwd user senai &&
+          mosquitto_passwd -b /mosquitto/config/passwd user2 senai;
+        fi &&
+        chmod 0700 /mosquitto/config/passwd &&
+        mosquitto -c /mosquitto/config/mosquitto.conf 
+      "
+    networks:
+      - mqtt_network
+    depends_on:
+      - certgenerator
+
+  temperature-sensor-1:
+    build:
+      context: .
+      dockerfile: Dockerfile.temperature-sensor-1
+    container_name: temperature-sensor-1
+    depends_on:
+      - mqtt-broker
+    environment:
+      BROKER_HOST: mqtt-broker
+      BROKER_PORT: "8883"            
+      TOPIC: sensor/temperature
+      INTERVAL_SECONDS: "5"
+      QOS: "0"
+      RETAIN: "false"
+      USER: user
+      PASSWD: senai
+      USE_TLS: true
+      CA_CERT_PATH: /mosquitto/config/certs/mosquitto.crt
+    volumes:
+      - ./mosquitto/config:/mosquitto/config     
+    restart: unless-stopped
+    networks:
+      - mqtt_network
+  mqtt-subscriber:
+    image: eclipse-mosquitto:2.0.20
+    container_name: mqtt-subscriber
+    depends_on:
+      - mqtt-broker
+    environment:
+      - user=user
+      - passwd=senai
+      - USE_TLS=true
+      - CA_CERT_PATH=/app/certs/mosquitto.crt
+    command: >
+      sh -c "mosquitto_sub -h mqtt-broker -t sensor/# -v -u user -P $${passwd}"
+    networks:
+      - mqtt_network
+    restart: unless-stopped
+
+networks:
+  mqtt_network:
+    name: mqtt_network
+    driver: bridge
+
+volumes:
+  mosquitto_data:
+  mosquitto_log:
