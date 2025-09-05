@@ -40,3 +40,6 @@ A comunicação cliente-servidor ocorria em texto puro, expondo credenciais e da
 - **Controle de Acesso (ACL)**: Permissões detalhadas para publicação e leitura de tópicos.
 - **Criptografia TLS**: Toda comunicação agora é criptografada, garantindo a segurança dos dados transmitidos.
 
+- <img width="806" height="328" alt="image" src="https://github.com/user-attachments/assets/8884cb22-796f-4687-adbf-e8ddf0825c62" />
+
+
