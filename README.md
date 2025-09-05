@@ -32,6 +32,9 @@ A comunicação cliente-servidor ocorria em texto puro, expondo credenciais e da
 - Habilitação de criptografia na porta **8883**.
 - Geração e configuração de certificados TLS (CA, servidor e clientes).
 
+<img width="552" height="201" alt="image" src="https://github.com/user-attachments/assets/266031d9-5a46-456a-b679-56c0c81a706e" />
+
+
 ---
 
 ## 🚀 Resultado Final
