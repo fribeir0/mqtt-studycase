@@ -69,7 +69,7 @@ services:
     volumes:
       - ./mosquitto/config/certs:/mosquitto/config/certs
     command: >
-      sh -c "mosquitto_sub -h mqtt-broker -p 8883 --cafile /mosquitto/config/certs/mosquitto.crt -t sensor/# -v -u $${user} -P $${passwd}"
+      sh -c "mosquitto_sub -h mqtt-broker -p 8883 --cafile /mosquitto/config/certs/mosquitto.crt -t sensor/# -v -u user -P $${passwd}"
     networks:
       - mqtt_network
     restart: unless-stopped
