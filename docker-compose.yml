@@ -22,9 +22,8 @@ services:
     command: >
       sh -c "
         if [ ! -f /mosquitto/config/passwd ]; then
-          touch /mosquitto/config/passwd &&
-          mosquitto_passwd -b /mosquitto/config/passwd user senai &&
-          mosquitto_passwd -b /mosquitto/config/passwd user2 senai;
+          chmod +x /mosquitto/config/add-users.sh &&
+          /mosquitto/config/add-users.sh
         fi &&
         chmod 0700 /mosquitto/config/passwd &&
         mosquitto -c /mosquitto/config/mosquitto.conf 
@@ -69,6 +68,8 @@ services:
       - passwd=senai
       - USE_TLS=true
       - CA_CERT_PATH=/app/certs/mosquitto.crt
+    volumes:
+      - ./mosquitto/config/certs:/mosquitto/config/certs
     command: >
       sh -c "mosquitto_sub -h mqtt-broker -p 8883 -t sensor/# -v -u user -P $${passwd} --cafile /mosquitto/config/certs/mosquitto.crt"
     networks:
