@@ -22,8 +22,9 @@ services:
     command: >
       sh -c "
         if [ ! -f /mosquitto/config/passwd ]; then
-          chmod +x /mosquitto/config/add-users.sh &&
-          /mosquitto/config/add-users.sh
+          touch /mosquitto/config/passwd &&
+          mosquitto_passwd -b /mosquitto/config/passwd user senai &&
+          mosquitto_passwd -b /mosquitto/config/passwd user2 senai;
         fi &&
         chmod 0700 /mosquitto/config/passwd &&
         mosquitto -c /mosquitto/config/mosquitto.conf 
@@ -61,15 +62,15 @@ services:
     container_name: mqtt-subscriber
     depends_on:
       - mqtt-broker
+    volumes:
+      - ./mosquitto/config:/mosquitto/config  
     environment:
       - user=user
       - passwd=senai
       - USE_TLS=true
       - CA_CERT_PATH=/app/certs/mosquitto.crt
-    volumes:
-      - ./mosquitto/config/certs:/mosquitto/config/certs
     command: >
-      sh -c "mosquitto_sub -h mqtt-broker -p 8883 --cafile /mosquitto/config/certs/mosquitto.crt -t sensor/# -v -u $${user} -P $${passwd}"
+      sh -c "mosquitto_sub -h mqtt-broker -p 8883 -t sensor/# -v -u user -P $${passwd} --cafile /mosquitto/config/certs/mosquitto.crt"
     networks:
       - mqtt_network
     restart: unless-stopped
